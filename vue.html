@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <!-- data binding start-->
+  value:<input type="text" value="joe" id="model" value=""><br>
+  show value:<p id="view"></p>
+  <script>
+    "use strict"
+    var Joe = {name: ""};
+    var m = document.getElementById("model");
+    var v = document.getElementById("view");
+    Object.defineProperty(Joe, "val", {
+      set: function (value) {
+        this.name = value;
+        v.innerHTML = Joe.val;
+      },
+      get: function () {
+        return this.name;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    m.addEventListener('input', function (e) {
+      Joe.val = e.target.value;
+      console.log(e);
+    })
+  </script>
+
+  <!-- template engine start-->
+  <div id="app">
+    <p>hello world! {{ name }}, stay {{hungry}}, stay {{ foolish }}</p>
+  </div>
+</body>
+<script>
+  "use strict"
+  // window.onbeforeunload = function (){
+  //   return false;
+  // }
+  //
+  let data = {
+    name: "joe",
+    hungry: "hungry"
+  };
+  let tpl = document.querySelector("#app").innerHTML;
+  let re = /{{([^}}]+)?}}/g;
+  let result = tpl.replace(re, function(str){
+    const val_name = /[^}}|{{| ]+/g;
+    let val = val_name.exec(str)[0];
+    console.log(val+","+str);
+    if(data[val]){
+      return data[val];
+    }else{
+      console.error("variable [" + val + "] is undefined in [data]");
+      return "undefined";
+    }
+  });
+  console.log(re.exec(tpl));
+
+
+
+  // let match = "";
+  // let re2 = /{{([^}}]+)?}}/g;
+  // while(match = re2.exec(tpl)) {
+  //     console.log(match);
+  // }
+
+  document.querySelector("#app").innerHTML = result;
+</script>
+</html>
