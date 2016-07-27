@@ -5,13 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
+  <style>
+    input {
+        margin: 10px 0;
+        padding: 5px;
+    }
+  </style>
 </head>
 <body>
   <!-- data binding start-->
-  value:<input type="text" value="joe" id="model" value=""><br>
-  show value:<p id="view"></p>
+  <div id="app1">
+    value:<input type="text" value="joe" id="model" value=""><br>
+    show value:<p id="view"></p>
+  </div>
   <script>
     "use strict"
+    function Pastry(conf) {
+      this.data = conf.data;
+      this.el = conf.el;
+      this.init();
+    }
+    Pastry.prototype = {
+      init: function (){
+        
+      }
+    }
+
+
+
     var Joe = {name: ""};
     var m = document.getElementById("model");
     var v = document.getElementById("view");
@@ -45,22 +66,26 @@
   //
   let data = {
     name: "joe",
-    hungry: "hungry"
+    hungry: "hungry",
+    foolishs: "foolish"
   };
+
   let tpl = document.querySelector("#app").innerHTML;
-  let re = /{{([^}}]+)?}}/g;
-  let result = tpl.replace(re, function(str){
-    const val_name = /[^}}|{{| ]+/g;
-    let val = val_name.exec(str)[0];
-    console.log(val+","+str);
-    if(data[val]){
-      return data[val];
-    }else{
-      console.error("variable [" + val + "] is undefined in [data]");
-      return "undefined";
-    }
-  });
-  console.log(re.exec(tpl));
+  function render( tpl, data){
+    const REG_RENDER = /{{([^}}]+)?}}/g;
+    let new_tpl = tpl.replace(REG_RENDER, function(str){
+      const REG_VAL_NAME = /[^}}|{{| ]+/g;
+      let valueName = REG_VAL_NAME.exec(str)[0];
+      if(data[valueName]){
+        return data[valueName];
+      }else{
+        console.error("variable [" + valueName + "] is undefined in [data]");
+        return "<strong style=\"color:red;\">["+valueName+"] undefined</strong>";
+      }
+    });
+    return new_tpl;
+  }
+
 
 
 
@@ -70,6 +95,6 @@
   //     console.log(match);
   // }
 
-  document.querySelector("#app").innerHTML = result;
+  document.querySelector("#app").innerHTML = render(tpl, data);;
 </script>
 </html>
