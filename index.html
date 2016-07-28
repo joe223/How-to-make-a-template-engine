@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    input {
+        margin: 10px 0;
+        padding: 5px;
+    }
+  </style>
+</head>
+<body>
+  <!-- data binding start-->
+  <div id="app1">
+    <img src="https://pic3.zhimg.com/37b4f40d32a57980706d3e8a2209dcfa_200x112.png" alt="">
+    value:<input type="text" value="joe" p-model="name" value=""><br>
+    show value:<p> {{ name }} </p>
+  </div>
+  <script>
+    "use strict"
+    function Pastry(conf) {
+      this.data = conf.data;
+      this.el = conf.el;
+      this.view_input = [];
+      this.init();
+    }
+    Pastry.prototype = {
+      init: function (){
+        let el = document.querySelector(this.el);
+        this.view_input = el.querySelectorAll('[p-model]');
+        let view_input = this.view_input;
+        console.log(view_input);
+        let _this = this;
+        Object.defineProperty(_this, 'val', {
+          set: function (value) {
+            console.log("set");
+            _this.data = value;
+            // v.innerHTML = this.val;
+            _this.bindText(ob);
+          },
+          get: function () {
+            return _this.data;
+          },
+          enumerable: true,
+          configurable: true
+        });
+        this.bindData(this);
+      },
+      bindText: function (ob){
+        let el = document.getElementById(ob.el);
+        let new_tpl = render(el.innerHTML, ob.data);
+        console.log(new_tpl);
+        el.innerHTML = new_tpl;
+      },
+      bindData: function (ob){
+        let view_input = ob.view_input;
+        for(let i = 0; i < view_input.length; i++){
+          view_input[i].addEventListener('input', function (e){
+            ob.val[e.target.getAttribute('p-model')] = e.target.value;
+          });
+        }
+      },
+    }
+
+    let joe = new Pastry({
+      el: "#app1",
+      data: {
+        name: "joe",
+        hungry: "hungry",
+        foolishs: "foolish"
+      }
+    });
+
+
+
+    // var Joe = {name: ""};
+    // var m = document.getElementById("model");
+    // var v = document.getElementById("view");
+    // Object.defineProperty(Joe, "val", {
+    //   set: function (value) {
+    //     this.name = value;
+    //     v.innerHTML = Joe.val;
+    //   },
+    //   get: function () {
+    //     return this.name;
+    //   },
+    //   enumerable: true,
+    //   configurable: true
+    // });
+    // m.addEventListener('input', function (e) {
+    //   Joe.val = e.target.value;
+    //   console.log(e);
+    // })
+  </script>
+
+  <!-- template engine start-->
+  <div id="app">
+    <p>hello world! {{ name }}, stay {{hungry}}, stay {{ foolish }}</p>
+  </div>
+</body>
+<script>
+  "use strict"
+  // window.onbeforeunload = function (){
+  //   return false;
+  // }
+  //
+  let data = {
+    name: "joe",
+    hungry: "hungry",
+    foolishs: "foolish"
+  };
+
+  let tpl = document.querySelector("#app").innerHTML;
+  function render( tpl, data){
+    const REG_RENDER = /{{([^}}]+)?}}/g;
+    try {
+      let new_tpl = tpl.replace(REG_RENDER, function(str){
+        const REG_VAL_NAME = /[^}}|{{| ]+/g;
+        let valueName = REG_VAL_NAME.exec(str)[0];
+        if(data[valueName]){
+          return data[valueName];
+        }else{
+          console.error("variable [" + valueName + "] is undefined in [data]");
+          return "<strong style=\"color:red;\">["+valueName+"] undefined</strong>";
+        }
+      });
+      return new_tpl;
+    } catch (e) {
+
+    } finally {
+      return "error !"
+    }
+  }
+
+
+
+
+  // let match = "";
+  // let re2 = /{{([^}}]+)?}}/g;
+  // while(match = re2.exec(tpl)) {
+  //     console.log(match);
+  // }
+
+  document.querySelector("#app").innerHTML = render(tpl, data);;
+</script>
+</html>
