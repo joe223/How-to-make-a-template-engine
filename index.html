@@ -16,8 +16,10 @@
   <!-- data binding start-->
   <div id="app1">
     <img src="https://pic3.zhimg.com/37b4f40d32a57980706d3e8a2209dcfa_200x112.png" alt="">
-    value:<input type="text" value="joe" p-model="name" value=""><br>
-    show value:<p> {{ name }} </p>
+    value:<input type="text" p-model="name" value=""><br>
+    value:<input type="text" p-model="hungry" value=""><br>
+    value:<input type="text" p-model="foolish" value=""><br>
+    show value:    <p>hello world! {{ name }}, stay {{hungry}}, stay {{ foolish }}</p>
   </div>
   <script>
     "use strict"
@@ -25,6 +27,7 @@
       this.data = conf.data;
       this.el = conf.el;
       this.view_input = [];
+      this.old_tpl = '';
       this.init();
     }
     Pastry.prototype = {
@@ -32,34 +35,38 @@
         let el = document.querySelector(this.el);
         this.view_input = el.querySelectorAll('[p-model]');
         let view_input = this.view_input;
-        console.log(view_input);
+        console.log(this.old_tpl);
+        this.old_tpl = el.innerHTML;
         let _this = this;
-        Object.defineProperty(_this, 'val', {
-          set: function (value) {
-            console.log("set");
-            _this.data = value;
-            // v.innerHTML = this.val;
-            _this.bindText(ob);
-          },
-          get: function () {
-            return _this.data;
-          },
-          enumerable: true,
-          configurable: true
-        });
         this.bindData(this);
       },
       bindText: function (ob){
-        let el = document.getElementById(ob.el);
-        let new_tpl = render(el.innerHTML, ob.data);
+        let el = document.querySelector(ob.el);
+        let new_tpl = render( ob.old_tpl, ob.data);
         console.log(new_tpl);
         el.innerHTML = new_tpl;
+        this.init();
       },
       bindData: function (ob){
         let view_input = ob.view_input;
         for(let i = 0; i < view_input.length; i++){
+          console.log("bind");
+          let prop = view_input[i].getAttribute("p-model");
+          let _value = ob.data[prop];
+          Object.defineProperty(ob.data, prop, {
+            set: function (value) {
+              console.log(value);
+              _value = value;
+              ob.bindText(ob);
+            },
+            get: function () {
+              return _value;
+            },
+            enumerable: true,
+            configurable: true
+          })
           view_input[i].addEventListener('input', function (e){
-            ob.val[e.target.getAttribute('p-model')] = e.target.value;
+            ob.data[e.target.getAttribute('p-model')] = e.target.value;
           });
         }
       },
@@ -70,7 +77,7 @@
       data: {
         name: "joe",
         hungry: "hungry",
-        foolishs: "foolish"
+        foolish: "foolish"
       }
     });
 
@@ -98,7 +105,7 @@
 
   <!-- template engine start-->
   <div id="app">
-    <p>hello world! {{ name }}, stay {{hungry}}, stay {{ foolish }}</p>
+    <!-- <p>hello world! {{ name }}, stay {{hungry}}, stay {{ foolish }}</p> -->
   </div>
 </body>
 <script>
@@ -107,32 +114,26 @@
   //   return false;
   // }
   //
-  let data = {
-    name: "joe",
-    hungry: "hungry",
-    foolishs: "foolish"
-  };
-
-  let tpl = document.querySelector("#app").innerHTML;
+  // let data = {
+  //   name: "joe",
+  //   hungry: "hungry",
+  //   foolishs: "foolish"
+  // };
+  //
+  // let tpl = document.querySelector("#app").innerHTML;
   function render( tpl, data){
     const REG_RENDER = /{{([^}}]+)?}}/g;
-    try {
-      let new_tpl = tpl.replace(REG_RENDER, function(str){
-        const REG_VAL_NAME = /[^}}|{{| ]+/g;
-        let valueName = REG_VAL_NAME.exec(str)[0];
-        if(data[valueName]){
-          return data[valueName];
-        }else{
-          console.error("variable [" + valueName + "] is undefined in [data]");
-          return "<strong style=\"color:red;\">["+valueName+"] undefined</strong>";
-        }
-      });
-      return new_tpl;
-    } catch (e) {
-
-    } finally {
-      return "error !"
-    }
+    let new_tpl = tpl.replace(REG_RENDER, function(str){
+      const REG_VAL_NAME = /[^}}|{{| ]+/g;
+      let valueName = REG_VAL_NAME.exec(str)[0];
+      if(data[valueName]){
+        return data[valueName];
+      }else{
+        console.error("variable [" + valueName + "] is undefined in [data]");
+        return "<strong style=\"color:red;\">["+valueName+"] undefined</strong>";
+      }
+    });
+    return new_tpl;
   }
 
 
@@ -144,6 +145,5 @@
   //     console.log(match);
   // }
 
-  document.querySelector("#app").innerHTML = render(tpl, data);;
 </script>
 </html>
