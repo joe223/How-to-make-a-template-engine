@@ -78,7 +78,7 @@
           });
         }
       },
-      render:   function render( tpl, data){
+      render: function render( tpl, data){
           const REG_RENDER = /{{([^}}]+)?}}/g;
           let newTpl = tpl.replace(REG_RENDER, function(str){
             const REG_VAL_NAME = /[^}}|{{| ]+/g;
