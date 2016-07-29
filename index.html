@@ -14,66 +14,84 @@
 </head>
 <body>
   <!-- data binding start-->
-  <div id="app1">
-    <img src="https://pic3.zhimg.com/37b4f40d32a57980706d3e8a2209dcfa_200x112.png" alt="">
-    value:<input type="text" p-model="name" value=""><br>
-    value:<input type="text" p-model="hungry" value=""><br>
-    value:<input type="text" p-model="foolish" value=""><br>
+  <div id="app">
+    <!-- <img src="https://pic3.zhimg.com/37b4f40d32a57980706d3e8a2209dcfa_200x112.png" alt=""> -->
+    name:<input type="text" p-model="name" value=""><br>
+    hungry:<input type="text" p-model="hungry" value=""><br>
+    foolish:<input type="text" p-model="foolish" value=""><br>
     show value:    <p>hello world! {{ name }}, stay {{hungry}}, stay {{ foolish }}</p>
   </div>
   <script>
     "use strict"
     function Pastry(conf) {
       this.data = conf.data;
+      this.$data = {}; // model
       this.el = conf.el;
-      this.view_input = [];
-      this.old_tpl = '';
+      this.input = [];
+      this.oldTpl = '';
+      this.textList = [];
       this.init();
     }
     Pastry.prototype = {
       init: function (){
         let el = document.querySelector(this.el);
-        this.view_input = el.querySelectorAll('[p-model]');
-        let view_input = this.view_input;
-        console.log(this.old_tpl);
-        this.old_tpl = el.innerHTML;
+        this.oldTpl = el.innerHTML;
+        let ob = this;
+        let newTpl = this.render( ob.oldTpl, ob.data);
+        el.innerHTML = newTpl;
+        this.input = el.querySelectorAll('[p-model]');
+        let input = this.input;
         let _this = this;
         this.bindData(this);
       },
-      bindText: function (ob){
-        let el = document.querySelector(ob.el);
-        let new_tpl = render( ob.old_tpl, ob.data);
-        console.log(new_tpl);
-        el.innerHTML = new_tpl;
-        this.init();
+      bindText: function ( prop, value){
+        let el = document.querySelector(this.el);
+        (el.querySelector('span[p-text=' + prop + ']')).innerHTML = value;
       },
       bindData: function (ob){
-        let view_input = ob.view_input;
-        for(let i = 0; i < view_input.length; i++){
+        let input = ob.input;
+        for(let i = 0; i < input.length; i++){
           console.log("bind");
-          let prop = view_input[i].getAttribute("p-model");
-          let _value = ob.data[prop];
+          let prop = input[i].getAttribute("p-model");
+          let _input = input[i];
           Object.defineProperty(ob.data, prop, {
             set: function (value) {
-              console.log(value);
-              _value = value;
-              ob.bindText(ob);
+              _input.value = value;
+              ob.bindText( prop, value);
             },
             get: function () {
-              return _value;
+              return _input.value;
             },
             enumerable: true,
             configurable: true
-          })
-          view_input[i].addEventListener('input', function (e){
-            ob.data[e.target.getAttribute('p-model')] = e.target.value;
+          });
+          console.log(input[i]);
+          input[i].addEventListener('input', function (e){
+            console.log(e);
+            // let prop = e.target.nodeName;
+            ob.data[prop] = e.target.value;
           });
         }
       },
+      render:   function render( tpl, data){
+          const REG_RENDER = /{{([^}}]+)?}}/g;
+          let newTpl = tpl.replace(REG_RENDER, function(str){
+            const REG_VAL_NAME = /[^}}|{{| ]+/g;
+            let valueName = REG_VAL_NAME.exec(str)[0];
+            if(data[valueName]){
+              // return data[valueName];
+              return '<span p-text=' + valueName + '></span>'
+            }else{
+              console.error("variable [" + valueName + "] is undefined in [data]");
+              return "<strong style=\"color:red;\">["+valueName+"] undefined</strong>";
+            }
+          });
+          return newTpl;
+        }
     }
 
     let joe = new Pastry({
-      el: "#app1",
+      el: "#app",
       data: {
         name: "joe",
         hungry: "hungry",
@@ -101,12 +119,11 @@
     //   Joe.val = e.target.value;
     //   console.log(e);
     // })
+    //
+    //
+
   </script>
 
-  <!-- template engine start-->
-  <div id="app">
-    <!-- <p>hello world! {{ name }}, stay {{hungry}}, stay {{ foolish }}</p> -->
-  </div>
 </body>
 <script>
   "use strict"
@@ -121,20 +138,21 @@
   // };
   //
   // let tpl = document.querySelector("#app").innerHTML;
-  function render( tpl, data){
-    const REG_RENDER = /{{([^}}]+)?}}/g;
-    let new_tpl = tpl.replace(REG_RENDER, function(str){
-      const REG_VAL_NAME = /[^}}|{{| ]+/g;
-      let valueName = REG_VAL_NAME.exec(str)[0];
-      if(data[valueName]){
-        return data[valueName];
-      }else{
-        console.error("variable [" + valueName + "] is undefined in [data]");
-        return "<strong style=\"color:red;\">["+valueName+"] undefined</strong>";
-      }
-    });
-    return new_tpl;
-  }
+  // function render( tpl, data){
+  //   const REG_RENDER = /{{([^}}]+)?}}/g;
+  //   let newTpl = tpl.replace(REG_RENDER, function(str){
+  //     const REG_VAL_NAME = /[^}}|{{| ]+/g;
+  //     let valueName = REG_VAL_NAME.exec(str)[0];
+  //     if(data[valueName]){
+  //       // return data[valueName];
+  //       return '<span p-text=' + valueName + '></span>'
+  //     }else{
+  //       console.error("variable [" + valueName + "] is undefined in [data]");
+  //       return "<strong style=\"color:red;\">["+valueName+"] undefined</strong>";
+  //     }
+  //   });
+  //   return newTpl;
+  // }
 
 
 
