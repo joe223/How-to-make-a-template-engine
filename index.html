@@ -19,17 +19,18 @@
     name:<input type="text" p-model="name" value=""><br>
     hungry:<input type="text" p-model="hungry" value=""><br>
     foolish:<input type="text" p-model="foolish" value=""><br>
-    show value:    <p>hello world! {{ name }}, stay {{hungry}}, stay {{ foolish }}</p>
+    show value:    <p>hello world! {{ name }}, stay {{hungry}}, stay {{ foolish }}{{ test }}</p>
   </div>
   <script>
     "use strict"
     function Pastry(conf) {
-      this.data = conf.data;
-      this.$data = {}; // model
+      // this.data = conf.data;
+      this.data = conf.data; // model
+      this._data = conf.data; // backup
       this.el = conf.el;
-      this.input = [];
+      this.inputList = [];
       this.oldTpl = '';
-      this.textList = [];
+      this.textList = {};
       this.init();
     }
     Pastry.prototype = {
@@ -39,19 +40,25 @@
         let ob = this;
         let newTpl = this.render( ob.oldTpl, ob.data);
         el.innerHTML = newTpl;
-        this.input = el.querySelectorAll('[p-model]');
-        let input = this.input;
-        let _this = this;
+        this.inputList = el.querySelectorAll('[p-model]');
+        let oldTextNode = el.querySelectorAll('[p-text]');
+        let length = oldTextNode.length;
+        let input = this.inputList;
+        let text = this.textList;
+        for (let i = 0; i < length; i++){
+          let temp = document.createTextNode("");
+          this.textList[oldTextNode[i].getAttribute('p-text')] = temp;
+          oldTextNode[i].parentNode.replaceChild(temp, oldTextNode[i]);
+        }
         this.bindData(this);
       },
       bindText: function ( prop, value){
         let el = document.querySelector(this.el);
-        (el.querySelector('span[p-text=' + prop + ']')).innerHTML = value;
+        (this.textList[prop]).nodeValue = value;
       },
       bindData: function (ob){
-        let input = ob.input;
-        for(let i = 0; i < input.length; i++){
-          console.log("bind");
+        let input = ob.inputList;
+        for(let i = 0; i < ob.inputList.length; i++){
           let prop = input[i].getAttribute("p-model");
           let _input = input[i];
           Object.defineProperty(ob.data, prop, {
@@ -65,10 +72,8 @@
             enumerable: true,
             configurable: true
           });
-          console.log(input[i]);
-          input[i].addEventListener('input', function (e){
-            console.log(e);
-            // let prop = e.target.nodeName;
+          input[i].addEventListener('keyup', function (e){
+            // can not write Chinease with input event
             ob.data[prop] = e.target.value;
           });
         }
@@ -95,7 +100,8 @@
       data: {
         name: "joe",
         hungry: "hungry",
-        foolish: "foolish"
+        foolish: "foolish",
+        test: "hello"
       }
     });
 
